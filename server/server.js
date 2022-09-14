@@ -26,9 +26,12 @@ const PORT = 3100;
 // Expose outside the image file
 app.use('/uploads', express.static("uploads"));
 
-app.post('/upload', upload.single("imageTest"), (req, res) => {
+app.post('/upload', upload.single("image"), (req, res) => {
   console.log(req.file);
-  res.json(req.file);
+  res.json({
+    success: true,
+    data: req.file
+  });
 });
 
 app.listen(PORT, () => {
