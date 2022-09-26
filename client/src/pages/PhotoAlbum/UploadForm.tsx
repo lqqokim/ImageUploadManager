@@ -1,5 +1,44 @@
 import React, { useState } from "react";
 import axios from "axios";
+import styled from "styled-components";
+// import notification from "antd/lib/notification";
+import { Progress, notification } from "antd";
+import ProgressBar from "./ProgressBar";
+
+const UploadFormWrapper = styled.div`
+  .file-dropper {
+    border: 1px dashed black;
+    height: 200px;
+    background-color: bisque;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .file-dropper input {
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    position: absolute;
+    cursor: pointer;
+  }
+
+  .file-dropper:hover {
+    background-color: gray;
+    color: white;
+    transition: 0.5s;
+  }
+
+  button {
+    width: 100%;
+    height: 40;
+    border-radius: 3;
+    cursor: pointer;
+  }
+`;
 
 interface Response {
   success: boolean;
@@ -7,9 +46,11 @@ interface Response {
 }
 
 function UploadForm() {
+  const DEFAULT_FILE_NAME = "이미지 파일을 업로드 해주세요.";
   const [file, setFile] = useState<File | null>(null);
+  const [uploadPercent, setUploadPercent] = useState(0);
   const [fileName, setFileName] = useState<string | undefined>(
-    "이미지 파일을 업로드 해주세요."
+    DEFAULT_FILE_NAME
   );
 
   const imageSelectHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -18,8 +59,23 @@ function UploadForm() {
     setFileName(imageFile?.name);
   };
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+  function initFileState(): void {
+    setUploadPercent(0);
+    setFileName(DEFAULT_FILE_NAME);
+  }
+
+  async function onSubmit(
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void | null> {
     e.preventDefault();
+
+    if (!file) {
+      return notification.open({
+        type: "info",
+        message: "Please select a file.",
+      });
+    }
+
     const formData = new FormData();
     formData.append("image", file as File);
 
@@ -28,26 +84,55 @@ function UploadForm() {
         data: { success, data },
       } = await axios.post<Response>("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (e: ProgressEvent) => {
+          setUploadPercent(Math.round((100 * e.loaded) / e.total));
+        },
       });
 
       if (success) {
-        console.log(data);
-        alert("Upload Success!");
+        notification.open({
+          type: "success",
+          message: "Upload Success!",
+          duration: 2,
+        });
+
+        setTimeout(() => {
+          initFileState();
+        }, 2000);
       } else {
-        alert("Upload Failed!");
+        notification.open({
+          type: "error",
+          message: "Upload Failed!",
+          duration: 2,
+        });
+
+        initFileState();
       }
     } catch (err) {
       console.log(err);
-      alert("Upload Failed!");
+      notification.open({
+        type: "error",
+        message: "Upload Failed!",
+        duration: 2,
+      });
+
+      initFileState();
     }
   }
 
   return (
-    <form onSubmit={onSubmit}>
-      <label htmlFor="image">{fileName}</label>
-      <input id="image" type="file" onChange={imageSelectHandler} />
-      <button type="submit">Submit</button>
-    </form>
+    <UploadFormWrapper>
+      <form onSubmit={onSubmit}>
+        {/* <ProgressBar percent={uploadPercent} /> */}
+        <ProgressBar percent={uploadPercent} />
+
+        <div className="file-dropper">
+          {fileName}
+          <input id="image" type="file" onChange={imageSelectHandler} />
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </UploadFormWrapper>
   );
 }
 
