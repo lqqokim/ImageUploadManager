@@ -33,9 +33,6 @@ function ProgressBar(props: ProgressBarProps) {
       }}
       {...props}
     />
-    // <ProgressBarWrapper percent={percent}>
-    //   <div>{percent}%</div>
-    // </ProgressBarWrapper>
   );
 }
 

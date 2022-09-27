@@ -1,11 +1,25 @@
 import React, { useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
-// import notification from "antd/lib/notification";
-import { Progress, notification } from "antd";
+import { notification } from "antd";
 import ProgressBar from "./ProgressBar";
 
-const UploadFormWrapper = styled.div`
+const FormWrapper = styled.div`
+  .image-preview {
+    width: 0%;
+    opacity: 0;
+    display: block;
+    margin: 0 auto 20px auto;
+    border-radius: 10px;
+    border: 5px solid grey;
+  }
+
+  .image-preview-show {
+    width: 300px;
+    opacity: 1;
+    transition: 0.5s;
+  }
+
   .file-dropper {
     border: 1px dashed black;
     height: 200px;
@@ -31,13 +45,13 @@ const UploadFormWrapper = styled.div`
     color: white;
     transition: 0.5s;
   }
+`;
 
-  button {
-    width: 100%;
-    height: 40;
-    border-radius: 3;
-    cursor: pointer;
-  }
+const SubmitButton = styled.button`
+  width: 100%;
+  height: 40;
+  border-radius: 3;
+  cursor: pointer;
 `;
 
 interface Response {
@@ -45,9 +59,10 @@ interface Response {
   data: any;
 }
 
-function UploadForm() {
+export default function UploadForm() {
   const DEFAULT_FILE_NAME = "이미지 파일을 업로드 해주세요.";
   const [file, setFile] = useState<File | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>("");
   const [uploadPercent, setUploadPercent] = useState(0);
   const [fileName, setFileName] = useState<string | undefined>(
     DEFAULT_FILE_NAME
@@ -57,11 +72,21 @@ function UploadForm() {
     const imageFile = e.currentTarget.files && e.currentTarget.files[0];
     setFile(imageFile);
     setFileName(imageFile?.name);
+
+    if (imageFile) {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(imageFile);
+      fileReader.onload = (e) => {
+        console.log("e  ", e.target);
+        setImgSrc(e.target!.result as string);
+      };
+    }
   };
 
   function initFileState(): void {
     setUploadPercent(0);
     setFileName(DEFAULT_FILE_NAME);
+    setImgSrc("");
   }
 
   async function onSubmit(
@@ -121,19 +146,27 @@ function UploadForm() {
   }
 
   return (
-    <UploadFormWrapper>
+    <FormWrapper>
       <form onSubmit={onSubmit}>
+        <img
+          className={`image-preview ${imgSrc && "image-preview-show"}`}
+          src={imgSrc}
+        />
         {/* <ProgressBar percent={uploadPercent} /> */}
         <ProgressBar percent={uploadPercent} />
 
         <div className="file-dropper">
           {fileName}
-          <input id="image" type="file" onChange={imageSelectHandler} />
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            onChange={imageSelectHandler}
+          />
         </div>
-        <button type="submit">Submit</button>
+
+        <SubmitButton type="submit">Submit</SubmitButton>
       </form>
-    </UploadFormWrapper>
+    </FormWrapper>
   );
 }
-
-export default UploadForm;
