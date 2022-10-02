@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { notification } from "antd";
@@ -40,6 +40,10 @@ const FormWrapper = styled.div`
     cursor: pointer;
   }
 
+  .file-dropper input::file-selector-button {
+    display: none;
+  }
+
   .file-dropper:hover {
     background-color: gray;
     color: white;
@@ -68,6 +72,8 @@ export default function UploadForm() {
     DEFAULT_FILE_NAME
   );
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const imageSelectHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const imageFile = e.currentTarget.files && e.currentTarget.files[0];
     setFile(imageFile);
@@ -77,7 +83,6 @@ export default function UploadForm() {
       const fileReader = new FileReader();
       fileReader.readAsDataURL(imageFile);
       fileReader.onload = (e) => {
-        console.log("e  ", e.target);
         setImgSrc(e.target!.result as string);
       };
     }
@@ -86,7 +91,9 @@ export default function UploadForm() {
   function initFileState(): void {
     setUploadPercent(0);
     setFileName(DEFAULT_FILE_NAME);
+    setFile(null);
     setImgSrc("");
+    fileInputRef.current!.value = "";
   }
 
   async function onSubmit(
@@ -158,7 +165,7 @@ export default function UploadForm() {
         <div className="file-dropper">
           {fileName}
           <input
-            id="image"
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             onChange={imageSelectHandler}
