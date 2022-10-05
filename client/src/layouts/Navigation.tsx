@@ -48,7 +48,7 @@ const defaultMenuItemKey = menuItems[1].key;
 
 function Navigation() {
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [current, setCurrent] = useState(getDefaultSelectedKey());
 
   function getDefaultSelectedKey(): string {

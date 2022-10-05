@@ -114,7 +114,7 @@ export default function UploadForm() {
     try {
       const {
         data: { success, data },
-      } = await axios.post<Response>("/upload", formData, {
+      } = await axios.post<Response>("/images", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (e: ProgressEvent) => {
           setUploadPercent(Math.round((100 * e.loaded) / e.total));
