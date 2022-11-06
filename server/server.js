@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Image } from './models/Image.js';
+import { Image } from './models/Image';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, './uploads'),
